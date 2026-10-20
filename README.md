@@ -24,7 +24,7 @@ seeds each metric needs.
 | `tests/` | Unit tests, including the statistics on synthetic data with known answers |
 
 Runs, re-evaluations, journals, sealed-panel results and all checkpoints are archived
-separately (about 2 GB), see **Data** below.
+separately on Zenodo (924 MB compressed), see **Data** below.
 
 ## Setup
 
@@ -55,7 +55,8 @@ root (it creates `runs/`) and run only the last block of `reproduce/run_all.sh`.
 ## Data
 
 Per-run summaries, learning curves, per-episode outcomes, re-evaluations, chain journals,
-sealed-panel results and every checkpoint: DOI to be added.
+sealed-panel results and every checkpoint (924 MB):
+[doi:10.5281/zenodo.23512311](https://doi.org/10.5281/zenodo.23512311).
 
 ## Laboratory interface
 
