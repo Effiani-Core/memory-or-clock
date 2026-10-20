@@ -1,0 +1,14 @@
+{
+  "architecture_id": "S001-MLP-clock",
+  "name": "mlp_small_clock",
+  "note": "C01 mechanism control: the small MLP whose encoder also reads the episode clock t/32 (observation + clock -> 51->32->32). No memory, knows the time, a quarter of the LSTM's size: 2,951 trainable parameters.",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "clock", "type": "clock", "inputs": ["observation"], "params": {"horizon": 32}},
+      {"id": "encoder", "type": "mlp", "inputs": ["clock"], "params": {"output_dim": 32}}
+    ],
+    "output": "encoder",
+    "max_parameters": 250000
+  }
+}

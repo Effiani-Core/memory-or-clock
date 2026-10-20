@@ -1,0 +1,13 @@
+{
+  "analysis_id": "C01-MECANISMO-SELLADO-APERTURA",
+  "description": "C01 mechanism controls on the C01 sealed panel, EXPLORATORY (added after the confirmatory result). Opening spec: plays best_B of the mechanism runs on the same sealed panel, 4 replicas.",
+  "plans": [
+    "plans/c01_mecanismo.json"
+  ],
+  "sealed": {
+    "evaluation_id": "C01-MECANISMO-SELLADO",
+    "panel": "configs/sealed/c01_parte2_B.json",
+    "checkpoint": "best_B",
+    "replicas": 4
+  }
+}

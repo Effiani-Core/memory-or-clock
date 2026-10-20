@@ -1,0 +1,13 @@
+{
+  "architecture_id": "S001-LSTM",
+  "name": "lstm",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "encoder", "type": "mlp", "inputs": ["observation"], "params": {"output_dim": 32}},
+      {"id": "memory", "type": "lstm", "inputs": ["encoder"], "params": {"output_dim": 32}}
+    ],
+    "output": "memory",
+    "max_parameters": 250000
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "architecture_id": "S001-stack4",
+  "name": "mlp_stack4_clock",
+  "note": "C01 short-memory control: an MLP that sees the last 4 observations stacked (zeros before the episode has 4 steps) plus the episode clock t/32; body 33->55->32. 11,381 trainable parameters (LSTM: 11,367, +0.1%).",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "stack", "type": "frame_stack", "inputs": ["observation"], "params": {"frames": 4}},
+      {"id": "encoder", "type": "mlp", "inputs": ["stack"], "params": {"output_dim": 32}},
+      {"id": "clock", "type": "clock", "inputs": ["encoder"], "params": {"horizon": 32}},
+      {"id": "body", "type": "mlp", "inputs": ["clock"], "params": {"output_dim": 32, "hidden_dim": 55}}
+    ],
+    "output": "body",
+    "max_parameters": 250000
+  }
+}

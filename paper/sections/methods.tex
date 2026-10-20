@@ -1,0 +1,154 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Environment and task}
+\label{sec:env}
+
+We use XLand-MiniGrid~0.9.3 \citep{nikulin2024xland}, a JAX re-implementation of grid worlds
+with objects and rules in the style of MiniGrid \citep{chevalierboisvert2023minigrid}, running on
+CPU. Every episode takes place on a $7\times7$ grid built by the environment's procedural
+generator from an integer \emph{map seed}; the seed fixes the walls and the positions of the
+agent and the objects. The agent sees only an egocentric $5\times5$ crop in front of it: for
+each cell, the tile type and its colour, scaled to $[0,1]$ and flattened to 50 inputs. It never
+receives the goal, the rules or the global map. It has six discrete actions (move forward, turn
+left, turn right, pick up, put down, toggle).
+
+Task~B places two objects on the grid: a red ball, which is the goal, and a green key, which is a
+distractor. The episode succeeds, and ends, when the agent holds the red ball; it is truncated
+after 32 steps. The reward is the environment's default sparse success reward,
+$1 - 0.9\,t/32$ at the successful step $t$ and $0$ otherwise. Because the view is partial, the
+target is often out of sight, and a policy without memory can condition only on the current crop.
+A random policy succeeds on 15.6\% of the validation maps and 14.1\% of the test maps.
+
+\paragraph{Map panels.}
+Maps are drawn from fixed, disjoint \emph{panels} of map seeds: 64 training maps (the only maps
+seen during training, cycled episode by episode), 32 validation maps (learning curves and
+checkpoint selection), 64 test maps (the reported score), plus a sealed final panel and a
+small known panel that this paper does not use. Panels contain no duplicate layout within or
+across panels: we hash each map's physical state (grid, agent position and direction, and the
+contents of the agent's pocket) and remove repeats.
+
+\subsection{Architectures}
+\label{sec:arch}
+
+Both agents share an encoder: a two-layer MLP with $\tanh$ activations, $50\to32\to32$. The
+\textbf{MLP} agent reads its policy and value directly from the encoder and has no memory
+(2,919 trainable parameters). The \textbf{LSTM} agent adds a single LSTM cell
+\citep{hochreiter1997lstm} with 32 units on top of the encoder (11,367 parameters). Both use a
+linear policy head over the six actions and a linear value head. The recurrent state is set to
+zero at the start of every episode, in training and in evaluation. The two agents differ in size
+by a factor of 3.9; \cref{sec:part2} controls for that difference.
+
+\subsection{Training}
+\label{sec:training}
+
+Agents are trained with synchronous advantage actor-critic (A2C; \citealp{mnih2016a3c}) on a
+single environment, with Adam \citep{kingma2015adam}, learning rate $10^{-3}$, rollouts of 16
+steps, discount $\gamma=0.99$, value-loss coefficient $0.5$, entropy coefficient $0.01$ and
+gradient-norm clipping at $0.5$. Gradients flow through the recurrent state within a rollout and
+are cut at rollout boundaries. Following \citet{pardo2018timelimits}, the 32-step time limit is
+treated as a truncation: the return bootstraps from the value of the last observation instead of
+treating it as terminal. Each run lasts 200,000 environment interactions. These settings were
+fixed by the study protocol before the pilot and are the same for both agents.
+
+\subsection{Evaluation}
+\label{sec:eval}
+
+\paragraph{During training.}
+Every 10,000 interactions (21 points per run, including step 0) the current weights are frozen,
+saved as a checkpoint, and played once on each of the 32 validation maps. Actions are sampled from
+the policy (not taken greedily); the sampling generator of each episode is seeded with its map
+seed, so an evaluation is a deterministic function of the weights. This gives the learning curve.
+At the end of training, the final weights are played once on each of the 64 test maps; this
+\emph{final test success} is the primary score of a run.
+
+\paragraph{Derived metrics.}
+The \emph{validation AUC} is the trapezoidal area under the learning curve divided by the
+training length, so it rewards learning early as well as learning well. The protocol's
+\emph{acquisition rule} declares a task acquired when two consecutive validation points reach
+at least $\max(0.75,\; s_0+0.2,\; s_{\text{rand}}+0.2)$, where $s_0$ is the success at step~0 and
+$s_{\text{rand}}$ that of the random policy; the acquisition step is the step of the second such
+point. A run therefore has a yes/no \emph{acquired} verdict.
+
+\paragraph{Re-evaluation.}
+To measure the randomness of evaluation itself, every saved checkpoint (all 21 curve points and
+the final weights) is played again $R=3$ times with the weights fixed, using a new sampling seed
+for each map and replica, $\text{map seed} + r\cdot 10{,}000{,}019$ for $r=1,2,3$ (replica~0 is
+the original evaluation). We keep the outcome of every episode. Re-evaluation never changes the
+run it reads; it verifies each checkpoint's SHA-256 digest before loading it.
+
+\subsection{Seeds and preregistration}
+\label{sec:seeds}
+
+A run is identified by its architecture and its \emph{training seed}, which fixes the initial
+weights, the order in which training maps are visited and the action-sampling stream during
+training. Before any run started, a plan file fixed the study, the two architectures, the task,
+the budget, $R$, and the seed rule: the three pilot seeds (7, 19, 31) followed by 27 seeds drawn
+from NumPy's \texttt{SeedSequence(20261018)} modulo $10^6$, skipping repeats. Both architectures
+are trained on the same 30 seeds, so every comparison is paired by seed. The plan, and a hash of
+it, are recorded in the chain's journal; a changed plan cannot continue an existing chain.
+
+\subsection{Separating seed, map and evaluation noise}
+\label{sec:gtheory}
+
+For one architecture and one metric, let $y_{smr}$ be the outcome of seed $s$ on map $m$ in
+re-evaluation replica $r$ (for final test success, $y_{smr}\in\{0,1\}$; for the AUC, the area
+under that map's curve in that replica). We use the crossed random-effects model of
+generalizability theory \citep{cronbach1972dependability,brennan2001generalizability}
+\begin{equation}
+  y_{smr} = \mu + a_s + b_m + (ab)_{sm} + e_{smr},
+  \label{eq:model}
+\end{equation}
+with independent zero-mean effects of variance $\sigma^2_{\text{seed}}$ (real differences between
+training seeds), $\sigma^2_{\text{map}}$ (some maps are harder for everyone),
+$\sigma^2_{\text{seed}\times\text{map}}$ (a seed finds some maps easier than other seeds do) and
+$\sigma^2_{\text{noise}}$ (the same weights on the same map give a different outcome under another
+sampling seed). With $S$ seeds, $M$ maps and $R$ replicas, the balanced ANOVA estimators
+\citep{searle1992variance} are
+\begin{align*}
+  \hat\sigma^2_{\text{noise}} &= \mathrm{MS}_E, &
+  \hat\sigma^2_{\text{seed}\times\text{map}} &= (\mathrm{MS}_{SM}-\mathrm{MS}_E)/R,\\
+  \hat\sigma^2_{\text{seed}} &= (\mathrm{MS}_S-\mathrm{MS}_{SM})/(MR), &
+  \hat\sigma^2_{\text{map}} &= (\mathrm{MS}_M-\mathrm{MS}_{SM})/(SR),
+\end{align*}
+where $\mathrm{MS}$ are the usual mean squares; negative estimates are reported as zero. The
+acquisition verdict has one value per seed and replica, so for it we use the one-way version
+($M=1$, map terms absent). Paired differences between architectures (LSTM minus MLP on the same
+seed, map and sampling seed) are analysed with the same model. Intervals for the components are
+percentile intervals from 1,000 bootstrap resamples of seeds \citep{efron1993bootstrap}.
+
+\paragraph{From components to designs (D study).}
+The variance of an architecture's mean score over $n_s$ seeds, $n_m$ maps and $n_r$ evaluations is
+\begin{equation}
+  \operatorname{Var}(\bar y) = \frac{\sigma^2_{\text{seed}}}{n_s}
+    + \frac{\sigma^2_{\text{seed}\times\text{map}}}{n_s n_m}
+    + \frac{\sigma^2_{\text{noise}}}{n_s n_m n_r}
+    \;\Big[+\frac{\sigma^2_{\text{map}}}{n_m}\Big],
+  \label{eq:dstudy}
+\end{equation}
+where the bracketed term applies only to claims about new maps; on a fixed panel shared by all
+runs it is common to every arm and cancels in a comparison. From \cref{eq:dstudy} we report
+(i)~the smallest $n_s$ whose 95\% interval half-width $1.96\sqrt{\operatorname{Var}(\bar y)}$ is
+below a target, and (ii)~for a paired difference with per-seed variance
+$V=\sigma^2_{\text{seed}}+\sigma^2_{\text{seed}\times\text{map}}/n_m+\sigma^2_{\text{noise}}/(n_m n_r)$,
+the seeds a two-sided test at $\alpha=0.05$ needs to find a true gap $\delta$ with power 0.8,
+$n_s=\lceil(z_{0.975}+z_{0.8})^2 V/\delta^2\rceil$ (normal approximation, minimum 2). Finally,
+the \emph{noise share} of a metric is the fraction of the between-seed variance of a run's score
+from a single evaluation ($n_m$ maps, $n_r=1$) that is due to evaluation noise,
+$(\sigma^2_{\text{noise}}/n_m)\,/\,V$. All computations are in
+\texttt{ucl study-variance}, which we checked on synthetic data with known components.
+
+\subsection{Execution}
+\label{sec:execution}
+
+Runs execute one at a time as a chain of events: the end of a run starts its re-evaluation, and
+the end of a re-evaluation starts the next run. Every event is appended to the chain's journal; a
+failed or interrupted step stops the chain and is shown as such until it is repeated by hand with
+the same seed. Two runs were stopped and repeated with the same seed, their partial outputs kept:
+one by a planned restart of the machine, and one by the runner's resource guard, which halts a
+run when available memory falls below 400\,MiB. Everything ran on
+one laptop CPU (Intel Core i7-12700H, WSL2, PyTorch~2.11 with two threads, JAX~0.4.38 on CPU).
+In Part~I a run took 6.4 minutes for the LSTM and 4.7 for the MLP, and its re-evaluation about
+one minute; the 60 runs used 12M training interactions and about 6.5 hours. Part~II's 128 runs
+(including the learning-rate search and the mechanism arms) used 38.4M interactions and about
+24 hours.

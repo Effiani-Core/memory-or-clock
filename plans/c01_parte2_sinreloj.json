@@ -1,0 +1,59 @@
+{
+  "plan_id": "C01-PARTE2-SINRELOJ",
+  "description": "C01 Part II, clock control, ADDED AFTER an interim look at 46 of 80 C01-PARTE2-FASE1 runs showed MLP-wide (width + clock) close to the LSTM; it is therefore exploratory, not preregistered with the main family. One arm: MLP-wide without the episode clock (11,401 parameters), on the same first 10 seeds as C01-PARTE2-FASE1 (same seed rule and exclusions), 300k interactions, re-evaluated 3 times. Learning rate fixed at 0.001, the rate the preregistered search chose for MLP-wide with clock; no new search.",
+  "study_dir": "configs/study_001",
+  "architectures": [
+    {
+      "config": "configs/study_001/arch-MLP-wide-noclock.json",
+      "algorithm": {
+        "lr": 0.001
+      },
+      "seed_count": 10
+    }
+  ],
+  "tasks": [
+    "B"
+  ],
+  "steps": 300000,
+  "eval_every": 10000,
+  "replicas": 3,
+  "master_seed": 20261020,
+  "pilot_seeds": [],
+  "exclude_seeds": [
+    7,
+    19,
+    31,
+    535979,
+    328694,
+    872517,
+    289603,
+    171982,
+    583751,
+    788462,
+    669253,
+    848731,
+    566539,
+    416238,
+    269624,
+    850155,
+    546386,
+    35618,
+    271099,
+    161144,
+    633142,
+    835606,
+    699210,
+    998619,
+    811591,
+    976100,
+    525594,
+    502356,
+    213914,
+    952452,
+    125448,
+    560485,
+    984584
+  ],
+  "seed_count": 20,
+  "output_dir": "runs/study_001/c01_sinreloj"
+}

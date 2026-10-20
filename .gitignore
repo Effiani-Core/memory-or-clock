@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+runs/
+.cache/
+*.pyc
+# Artefactos de auditoría grandes o temporales (fuera de git, ver AGENTS.md)
+audit/baseline.files.jsonl
+audit/baseline.paths.jsonl
+audit/test-temp-*/

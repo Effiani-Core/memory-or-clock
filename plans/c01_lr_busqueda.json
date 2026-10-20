@@ -1,0 +1,91 @@
+{
+  "plan_id": "C01-LR-BUSQUEDA",
+  "description": "C01 Part II, step 1: learning-rate mini-search for the two new memory-free arms (MLP-wide and stack4), 3 values x 3 tuning seeds, 300k interactions on B. Tuning seeds are new and excluded from every evaluation plan. The selection rule (highest mean normalized validation AUC; ties go to the protocol lr, listed first) is applied by C01-PARTE2-FASE1. Fixed before any result.",
+  "study_dir": "configs/study_001",
+  "architectures": [
+    {
+      "config": "configs/study_001/arch-MLP-wide.json",
+      "label": "MLP-wide-lr0.001",
+      "algorithm": {
+        "lr": 0.001
+      }
+    },
+    {
+      "config": "configs/study_001/arch-MLP-wide.json",
+      "label": "MLP-wide-lr0.0003",
+      "algorithm": {
+        "lr": 0.0003
+      }
+    },
+    {
+      "config": "configs/study_001/arch-MLP-wide.json",
+      "label": "MLP-wide-lr0.003",
+      "algorithm": {
+        "lr": 0.003
+      }
+    },
+    {
+      "config": "configs/study_001/arch-stack4.json",
+      "label": "stack4-lr0.001",
+      "algorithm": {
+        "lr": 0.001
+      }
+    },
+    {
+      "config": "configs/study_001/arch-stack4.json",
+      "label": "stack4-lr0.0003",
+      "algorithm": {
+        "lr": 0.0003
+      }
+    },
+    {
+      "config": "configs/study_001/arch-stack4.json",
+      "label": "stack4-lr0.003",
+      "algorithm": {
+        "lr": 0.003
+      }
+    }
+  ],
+  "tasks": [
+    "B"
+  ],
+  "steps": 300000,
+  "eval_every": 10000,
+  "replicas": 1,
+  "master_seed": 20261019,
+  "pilot_seeds": [],
+  "exclude_seeds": [
+    7,
+    19,
+    31,
+    535979,
+    328694,
+    872517,
+    289603,
+    171982,
+    583751,
+    788462,
+    669253,
+    848731,
+    566539,
+    416238,
+    269624,
+    850155,
+    546386,
+    35618,
+    271099,
+    161144,
+    633142,
+    835606,
+    699210,
+    998619,
+    811591,
+    976100,
+    525594,
+    502356,
+    213914,
+    952452
+  ],
+  "seed_count": 3,
+  "output_dir": "runs/study_001/c01_lr"
+}

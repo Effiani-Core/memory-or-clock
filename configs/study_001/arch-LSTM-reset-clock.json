@@ -1,0 +1,15 @@
+{
+  "architecture_id": "S001-LSTM-reset-clock",
+  "name": "lstm_reset_clock",
+  "note": "C01 mechanism control: LSTM-reset whose cell also reads the episode clock t/32 (encoder output + clock -> LSTM cell with its state erased every step). No memory, knows the time. 11,495 trainable parameters (+1.1% over LSTM: the cell input is 33 wide).",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "encoder", "type": "mlp", "inputs": ["observation"], "params": {"output_dim": 32}},
+      {"id": "clock", "type": "clock", "inputs": ["encoder"], "params": {"horizon": 32}},
+      {"id": "memory", "type": "lstm_reset", "inputs": ["clock"], "params": {"output_dim": 32}}
+    ],
+    "output": "memory",
+    "max_parameters": 250000
+  }
+}

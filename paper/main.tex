@@ -1,0 +1,99 @@
+% Paper 1 (C08 + C01). arXiv-ready: compile with pdflatex + bibtex, then upload
+% main.tex, sections/, figures/*.pdf and main.bbl (arXiv does not run BibTeX).
+% For TMLR, swap the preamble for tmlr.sty (see README.md); the body does not change.
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[round,authoryear]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{xcolor}
+
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\pp}{\,pp}  % percentage points
+% Fill these two before submitting (public code repo; Zenodo DOI for runs and checkpoints).
+\newcommand{\codeurl}{\todo{public code URL}}
+\newcommand{\dataurl}{\todo{Zenodo DOI}}
+
+% Title candidates: "Memory or a Clock?", "How Many Seeds Does a Memory Claim Need?"
+\title{Memory or a Clock?\\
+\large Auditing a Memory Advantage in XLand-MiniGrid with Seeds, Maps and Evaluation Noise Apart}
+
+\author{Rodrigo Reveron-Fonseca\\
+Tecnol\'ogico de Monterrey\\
+\texttt{a01841051@tec.mx}}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+On a partially observable XLand-MiniGrid task, an LSTM agent beats a memory-free MLP by 25
+percentage points. The gap looks like a clear case of memory. We ask two questions about it.
+First, how much of a measured gap is noise? Separating training seed, map and evaluation
+randomness in 60 runs, each re-evaluated three times, we find that about ten paired seeds detect
+a 10-point gap in final success. The binary ``task acquired'' verdict, a common summary of
+learning curves, is 76\% evaluation noise and would need about a hundred seeds for the same gap.
+Second, is the gap memory? On a sealed panel of new maps, opened once, a memory-free MLP of the
+LSTM's size comes within 3.3 points of the LSTM when it is given the time step, and gains no
+measurable benefit from its width without it. With the time step, an MLP a quarter of the
+LSTM's size, and the LSTM with its state erased at every step, also come within about 5 points.
+A linear probe reads the time step from the trained LSTM's state. On this task, most of the
+apparent memory advantage is an advantage of knowing the time, which matters because episodes
+are cut at a fixed limit and the reward shrinks with time. We recommend giving memory-free baselines the time step,
+and we release the protocol, the event-driven tooling and every checkpoint.
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/methods}
+\input{sections/methods_part2}
+\input{sections/results_part1}
+\input{sections/results_part2}
+\input{sections/discussion}
+
+\section{Limitations}
+\label{sec:limitations}
+All runs use one task (B), one environment family, one algorithm (A2C) and small networks
+(2,919 and 11,367 parameters) on a $7\times7$ grid. The variance components are specific to
+this setting; the method that estimates them is not. The test panel is fixed, so claims about
+new maps carry an additional map term (\cref{sec:results-seeds}). The acquisition verdict uses
+the protocol's rule as written; other thresholds would change its noise share.
+
+In Part~II, the hypotheses and thresholds were fixed in a written design before any run, but not
+registered on a public platform. P3, the fully observable twin, was not run. The clock control
+was added after an interim look and is exploratory, and its 10 seeds give wide intervals for the
+width effect; the mechanism arms were added after the confirmatory result, also on 10 seeds,
+and the sealed panel had already been opened once when they were played on it (it was still
+unseen by them). The account of why the clock matters (\cref{sec:part2-why}) rests on a probe and
+on these arms; we did not test it with a reward that ignores time. Whether the result holds for other tasks, longer horizons, rewards that do not depend on
+time, or other algorithms is open.
+
+\section{Conclusion}
+\label{sec:conclusion}
+A clear memory advantage on a partially observable XLand-MiniGrid task turned out to be mostly
+an advantage of knowing the time. We found this by separating the noise of the measurement from
+real differences between agents and by controlling, one at a time, for capacity, recurrence,
+short-term memory and time awareness, on maps no agent had seen. Claims that an architecture
+benefits from memory should survive the same controls.
+
+\section*{Reproducibility statement}
+Every run was listed in a plan file before any of its own results existed, executed by an
+event-driven
+chain that records each step in an append-only journal, and re-evaluated from saved weights.
+Re-running a seed reproduces its final weights bit for bit (\cref{sec:results-repro}). Code,
+plans, configurations and analysis specifications are available at \codeurl; per-episode
+outcomes and all checkpoints are archived at \dataurl.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

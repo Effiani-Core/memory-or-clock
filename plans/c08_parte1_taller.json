@@ -1,0 +1,14 @@
+{
+  "plan_id": "C08-PARTE1-TALLER",
+  "description": "C08 Part I (workshop version): task B only, LSTM and MLP, 30 seeds (pilot seeds 7, 19, 31 re-run with per-evaluation checkpoints, which also checks reproducibility against the pilot), 200k interactions, each run re-evaluated with 3 new sampling seeds. Fixed before any result.",
+  "study_dir": "configs/study_001",
+  "architectures": ["configs/study_001/arch-LSTM.json", "configs/study_001/arch-MLP.json"],
+  "tasks": ["B"],
+  "steps": 200000,
+  "eval_every": 10000,
+  "replicas": 3,
+  "master_seed": 20261018,
+  "pilot_seeds": [7, 19, 31],
+  "seed_count": 30,
+  "output_dir": "runs/study_001/c08_parte1"
+}

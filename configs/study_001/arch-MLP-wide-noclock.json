@@ -1,0 +1,14 @@
+{
+  "architecture_id": "S001-MLP-wide-noclock",
+  "name": "mlp_wide_no_clock",
+  "note": "C01 clock control: MLP-wide without the episode clock. Same encoder as LSTM, the LSTM core replaced by a 32->130->32 MLP. 11,401 trainable parameters (LSTM: 11,367, +0.3%). Separates width from the clock input in the MLP-wide arm.",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "encoder", "type": "mlp", "inputs": ["observation"], "params": {"output_dim": 32}},
+      {"id": "body", "type": "mlp", "inputs": ["encoder"], "params": {"output_dim": 32, "hidden_dim": 130}}
+    ],
+    "output": "body",
+    "max_parameters": 250000
+  }
+}

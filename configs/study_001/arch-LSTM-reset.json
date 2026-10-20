@@ -1,0 +1,14 @@
+{
+  "architecture_id": "S001-LSTM-reset",
+  "name": "lstm_reset",
+  "note": "C01 recurrence control: the LSTM with the same 11,367 parameters, but its state (h, c) is set to zero before every step in training and evaluation. Its 4,096 recurrent weights are unused, so it controls recurrence, not capacity.",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "encoder", "type": "mlp", "inputs": ["observation"], "params": {"output_dim": 32}},
+      {"id": "memory", "type": "lstm_reset", "inputs": ["encoder"], "params": {"output_dim": 32}}
+    ],
+    "output": "memory",
+    "max_parameters": 250000
+  }
+}

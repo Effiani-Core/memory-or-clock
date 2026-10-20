@@ -1,0 +1,76 @@
+{
+  "plan_id": "C01-PARTE2-FASE1",
+  "description": "C01 Part II, phase 1 (minimal version, B partially observable): LSTM, MLP-wide with clock and LSTM-reset with 20 new seeds each; original MLP and stack4 with 10 (the first 10 of the same seeds, so all arms stay paired). 300k interactions, secondary reading at 200k from the curve checkpoints. Seeds exclude the pilot (7, 19, 31), every C08 Part I seed and the learning-rate tuning seeds. Arm order inside each seed block is a fixed permutation. MLP-wide and stack4 take the learning rate chosen by the preregistered rule on C01-LR-BUSQUEDA, which runs first. Fixed before any result.",
+  "study_dir": "configs/study_001",
+  "after": "plans/c01_lr_busqueda.json",
+  "selection": {
+    "rule": "highest_mean_validation_auc",
+    "groups": [
+      "MLP-wide",
+      "stack4"
+    ]
+  },
+  "architectures": [
+    "configs/study_001/arch-LSTM.json",
+    {
+      "config": "configs/study_001/arch-MLP-wide.json",
+      "lr_from": "MLP-wide"
+    },
+    "configs/study_001/arch-LSTM-reset.json",
+    {
+      "config": "configs/study_001/arch-MLP.json",
+      "seed_count": 10
+    },
+    {
+      "config": "configs/study_001/arch-stack4.json",
+      "lr_from": "stack4",
+      "seed_count": 10
+    }
+  ],
+  "tasks": [
+    "B"
+  ],
+  "steps": 300000,
+  "eval_every": 10000,
+  "replicas": 3,
+  "master_seed": 20261020,
+  "pilot_seeds": [],
+  "exclude_seeds": [
+    7,
+    19,
+    31,
+    535979,
+    328694,
+    872517,
+    289603,
+    171982,
+    583751,
+    788462,
+    669253,
+    848731,
+    566539,
+    416238,
+    269624,
+    850155,
+    546386,
+    35618,
+    271099,
+    161144,
+    633142,
+    835606,
+    699210,
+    998619,
+    811591,
+    976100,
+    525594,
+    502356,
+    213914,
+    952452,
+    125448,
+    560485,
+    984584
+  ],
+  "seed_count": 20,
+  "shuffle_within_seed": true,
+  "output_dir": "runs/study_001/c01_fase1"
+}

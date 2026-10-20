@@ -1,0 +1,30 @@
+{
+  "analysis_id": "C01-PARTE2-DESARROLLO",
+  "description": "C01 Part II on the existing 64-map test panel (development panel). Contrasts, thresholds and families are those of the C01 design (research document section 12.4, written 2026-10-18, before any Part II run). P3 (MDP/POMDP twin) was not run but still counts in the principal family (m = 3). The confirmatory analysis repeats this spec on the new sealed panel with best_B; this one is not confirmatory. The exploratory family, including the clock control, was added after an interim look.",
+  "plans": ["plans/c01_parte2_fase1.json", "plans/c01_parte2_sinreloj.json"],
+  "scores": [
+    {"name": "final_test", "kind": "final_test", "role": "main score on the development panel: end-of-training model, 64 test maps x 4 evaluations"},
+    {"name": "validation_200k", "kind": "validation_at", "step": 200000, "role": "secondary: reading at 200k, comparable with the pilot and Part I"},
+    {"name": "auc", "kind": "auc", "role": "secondary: normalized area under the validation curve"}
+  ],
+  "alpha": 0.05,
+  "bootstrap": 10000,
+  "seed": 0,
+  "families": [
+    {"name": "principal", "holm_m": 3, "contrasts": [
+      {"id": "P1", "label": "capacity: LSTM minus parameter-matched MLP with clock", "weights": {"LSTM": 1, "MLP-wide": -1}, "min_effect": 0.15},
+      {"id": "P2", "label": "recurrence: LSTM minus LSTM-reset", "weights": {"LSTM": 1, "LSTM-reset": -1}, "min_effect": 0.15}
+    ]},
+    {"name": "secondary", "holm_m": 5, "contrasts": [
+      {"id": "H3", "label": "short memory: LSTM + MLP-wide - 2 stack4 > 0", "weights": {"LSTM": 1, "MLP-wide": 1, "stack4": -2}, "min_effect": 0.0}
+    ]},
+    {"name": "exploratory", "exploratory": true, "contrasts": [
+      {"id": "E1", "label": "clock: MLP-wide minus MLP-wide without clock", "weights": {"MLP-wide": 1, "MLP-wide-noclock": -1}},
+      {"id": "E2", "label": "width without clock: MLP-wide-noclock minus small MLP", "weights": {"MLP-wide-noclock": 1, "MLP": -1}},
+      {"id": "E3", "label": "pilot contrast: LSTM minus small MLP", "weights": {"LSTM": 1, "MLP": -1}},
+      {"id": "E4", "label": "LSTM minus stack4", "weights": {"LSTM": 1, "stack4": -1}},
+      {"id": "E5", "label": "stack4 minus MLP-wide", "weights": {"stack4": 1, "MLP-wide": -1}},
+      {"id": "E6", "label": "LSTM-reset minus small MLP", "weights": {"LSTM-reset": 1, "MLP": -1}}
+    ]}
+  ]
+}

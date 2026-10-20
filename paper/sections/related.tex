@@ -1,0 +1,48 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Statistical practice in deep RL.}
+\citet{henderson2018matters} showed that results in deep RL can change with the random seed and
+with implementation details, and \citet{colas2018seeds} turned this into power analyses for the
+number of seeds. \citet{jordan2020evaluating} proposed performance measures that aggregate
+across environments and account for variation across runs, \citet{agarwal2021precipice} recommended interval
+estimates and robust aggregates such as the interquartile mean when only a few runs are
+affordable, and \citet{patterson2024empirical} gave broad guidance on empirical design. These
+works treat the run as the unit and its score as given. We look inside the score: in a
+procedurally generated environment a run's score also depends on which maps it is tested on and
+on the sampling randomness of the evaluation episodes, and these sources call for different
+remedies (more seeds, more maps, or more evaluations). We estimate them separately and show that
+they differ by metric, to the point that one common summary, the acquisition verdict, is mostly
+evaluation noise.
+
+\paragraph{Generalizability theory.}
+Separating the sources of variance of a measurement, and planning a design from them, is the
+subject of generalizability theory \citep{cronbach1972dependability,brennan2001generalizability},
+long used for test scores and ratings, with variance components estimated as in
+\citet{searle1992variance}. To our knowledge it has rarely been applied to the evaluation of RL
+agents; we use its standard crossed model with training seeds, maps and evaluation replicas as
+facets.
+
+\paragraph{Evaluating memory in RL.}
+\citet{hausknecht2015drqn} compared a recurrent Q-network that reads one frame at a time with a
+feedforward one that reads a stack of four, the classic short-memory control we also use. POPGym
+\citep{morad2023popgym} found memory-free policies competitive on several of its partially
+observable tasks, \citet{ni2023transformers} separated memory length from credit assignment, and
+\citet{cherepanov2024memory} argued that conclusions about memory depend on the type of memory a
+task requires and on the evaluation protocol. Our controls follow the same spirit for one concrete
+claim: we match parameters, ablate recurrence while keeping the weights, give a short fixed
+memory, and, decisively here, give memory-free agents the time step.
+
+\paragraph{Time limits.}
+\citet{pardo2018timelimits} showed that when episodes are cut by a time limit, an agent that is
+not told the remaining time faces a partially observable problem, and that adding the time to the
+observation helps. \citet{deverett2019interval} showed that recurrent agents trained on interval
+timing tasks develop clock-like dynamics in their state. Our result is an instance of these
+effects hiding inside a memory comparison on a task that is not about timing: part of what a
+recurrent agent gains from its state is a clock.
+
+\paragraph{XLand-MiniGrid.}
+XLand-MiniGrid \citep{nikulin2024xland} implements MiniGrid-style worlds
+\citep{chevalierboisvert2023minigrid} with objects, goals and rules in JAX and is used mainly for
+meta-reinforcement learning. We use a single fixed task from it and do not study meta-learning;
+our findings concern how a memory comparison on such a task should be run and read.

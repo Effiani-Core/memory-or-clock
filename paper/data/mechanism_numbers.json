@@ -1,0 +1,96 @@
+{
+ "LSTM-reset-clock": {
+  "n": 10,
+  "params": 11495,
+  "sealed": 0.915234375,
+  "ci": [
+   0.89296875,
+   0.934375
+  ],
+  "acquired": 10,
+  "median_step": 120000.0,
+  "auc": 0.6833333333333332
+ },
+ "MLP-clock": {
+  "n": 10,
+  "params": 2951,
+  "sealed": 0.906640625,
+  "ci": [
+   0.884375,
+   0.928125
+  ],
+  "acquired": 10,
+  "median_step": 205000.0,
+  "auc": 0.6044791666666667
+ },
+ "contrasts": [
+  {
+   "id": "M1",
+   "label": "clock for LSTM-reset",
+   "mean": 0.241015625,
+   "bca_95": [
+    0.216015625,
+    0.269921875
+   ],
+   "p": 0.001953125,
+   "positive": 10,
+   "seeds": 10
+  },
+  {
+   "id": "M2",
+   "label": "memory beyond the clock, same cell: LSTM minus LSTM-reset-clock",
+   "mean": 0.04453125,
+   "bca_95": [
+    0.025390625,
+    0.069140625
+   ],
+   "p": 0.001953125,
+   "positive": 10,
+   "seeds": 10
+  },
+  {
+   "id": "M3",
+   "label": "clock for the small MLP",
+   "mean": 0.287890625,
+   "bca_95": [
+    0.240234375,
+    0.315625
+   ],
+   "p": 0.001953125,
+   "positive": 10,
+   "seeds": 10
+  },
+  {
+   "id": "M4",
+   "label": "width given the clock: MLP-wide minus MLP-clock",
+   "mean": 0.01015625,
+   "bca_95": [
+    -0.026953125,
+    0.051171875
+   ],
+   "p": 0.66015625,
+   "positive": 6,
+   "seeds": 10
+  },
+  {
+   "id": "M5",
+   "label": "LSTM minus MLP-clock",
+   "mean": 0.053125,
+   "bca_95": [
+    0.026171875,
+    0.085546875
+   ],
+   "p": 0.01171875,
+   "positive": 8,
+   "seeds": 10
+  }
+ ],
+ "ladder_small_clock": {
+  "MLP": 0.61875,
+  "MLP-clock": 0.906640625,
+  "MLP-wide": 0.916796875,
+  "LSTM": 0.959765625,
+  "LSTM-reset": 0.67421875,
+  "LSTM-reset-clock": 0.915234375
+ }
+}

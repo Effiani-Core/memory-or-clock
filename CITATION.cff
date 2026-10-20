@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the paper."
+title: "Memory or a Clock? Auditing a Memory Advantage in XLand-MiniGrid with Seeds, Maps and Evaluation Noise Apart"
+authors:
+  - family-names: Reveron-Fonseca
+    given-names: Rodrigo
+    affiliation: Tecnológico de Monterrey
+license: MIT
+date-released: 2026-10-20

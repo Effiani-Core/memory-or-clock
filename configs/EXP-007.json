@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "task_manifest": "configs/tasks.json",
+  "task_id": "development-navigation",
+  "evaluation_task": "validation-navigation",
+  "heldout_task": "heldout-navigation",
+  "seed": 7,
+  "device": "cuda",
+  "train_steps": 8,
+  "evaluation_seeds": [
+    140000
+  ],
+  "algorithm": {
+    "name": "a2c",
+    "lr": 0.001,
+    "rollout_steps": 2,
+    "gamma": 0.99,
+    "entropy_coef": 0.01
+  },
+  "resources": {
+    "max_seconds": 600,
+    "min_ram_mib": 400,
+    "max_temperature_c": 82,
+    "min_disk_gib": 2
+  },
+  "growth": {
+    "kind": "none"
+  },
+  "tracking": {
+    "uri": "http://127.0.0.1:5000",
+    "experiment": "Universal Cognitive Lab"
+  },
+  "claim": "Infrastructure smoke only; not evidence of architectural superiority",
+  "architecture_id": "EXP-007",
+  "name": "rim",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {
+        "id": "encoder",
+        "type": "frozen_llm",
+        "inputs": [
+          "observation"
+        ],
+        "params": {
+          "model_dir": "/home/researcher/lab-state/models/Qwen2.5-1.5B-Instruct-989aa798",
+          "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+          "max_tokens": 512,
+          "device": "cuda"
+        }
+      },
+      {
+        "id": "adapter",
+        "type": "mlp",
+        "inputs": [
+          "encoder"
+        ],
+        "params": {
+          "output_dim": 32
+        }
+      },
+      {
+        "id": "memory",
+        "type": "rim",
+        "inputs": [
+          "adapter"
+        ],
+        "params": {
+          "output_dim": 32,
+          "modules": 3,
+          "active_modules": 2
+        }
+      }
+    ],
+    "output": "memory",
+    "max_parameters": 250000
+  }
+}

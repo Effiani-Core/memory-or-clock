@@ -1,0 +1,46 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{What the memory advantage was.}
+The LSTM's 25 to 34-point advantage over a small memory-free MLP survives every statistical check
+we applied, and it is real in the sense that it reproduces across seeds and maps. It is not,
+for the most part, an advantage of remembering what was seen. Width alone explains about a tenth
+of it, the time step about four fifths, and what is left for the LSTM beyond a clock is about
+3 points on new maps, a difference we can detect but that is far smaller than the one we set out
+to explain. The LSTM does need its recurrent state (erasing it costs 28 points), and its state
+does encode the time step, and handing the time step to the same network with its state erased
+gives back 24 of those 28 points. On this task, the recurrent state is used largely as a clock. Whether the remaining 3 points are memory of the scene or a
+better clock is an open question.
+
+\paragraph{Recommendations.}
+For memory comparisons in tasks with time limits or time-dependent rewards:
+\begin{enumerate}
+  \item Give memory-free baselines the time step, or remove the dependence on time, before
+  attributing a gap to memory. In our task this one input moved a memory-free network from 65\%
+  to 92\%.
+  \item Match parameters, and include an ablation that keeps the recurrent agent's weights but
+  erases its state; together they separate capacity from recurrence.
+  \item Report final success over paired seeds, with intervals: about ten paired seeds detect a
+  10-point gap here, and about forty a 5-point gap. Avoid binary acquisition verdicts, or report
+  them with many seeds and several evaluations per checkpoint.
+  \item Re-evaluate saved checkpoints with new sampling seeds. It is cheap, it measures the noise
+  of the evaluation directly, and it showed that the acquisition verdict of more than a quarter of
+our LSTM runs (8 of 30) flips under new sampling seeds.
+  \item Keep a sealed panel of new maps for the final comparison, and use more maps rather than
+  more seeds when the claim is about generalization to new maps.
+\end{enumerate}
+
+\paragraph{Variance in procedurally generated environments.}
+The decomposition shows why a single number such as ``use ten seeds'' cannot be right in general.
+Final success varied mainly between seeds, so more seeds help and more evaluations help little;
+the acquisition verdict varied mainly between evaluations, so the opposite holds; and claims about
+unseen maps are limited by the number of maps, whatever the number of seeds. A short pilot with
+re-evaluation is enough to estimate these components and to choose a design before the main
+experiment.
+
+\paragraph{Scope.}
+Everything here is one task, one algorithm and small networks, and we expect the size of the
+clock effect to depend on the horizon, on how strongly the reward depends on time and on how
+value targets are computed at the time limit. The method, however, transfers: the same controls
+and the same decomposition can be run on any memory benchmark at little cost, and we release the
+tooling to do so.

@@ -1,0 +1,86 @@
+\subsection{Part II design: memory, capacity or a clock?}
+\label{sec:methods-part2}
+
+Part~I compares an LSTM with an MLP that is 3.9 times smaller and cannot tell how far into the
+episode it is. Part~II separates those differences with controls that change one thing at a time
+(\cref{tab:arms}). All share the encoder of \cref{sec:arch} and the training and evaluation of
+\cref{sec:training,sec:eval}, with a budget of 300,000 interactions.
+
+\begin{itemize}
+  \item \textbf{MLP-wide + clock} (11,399 parameters) replaces the LSTM cell with a memory-free
+  MLP of the same size, $33\to128\to32$, whose extra input is the time inside the episode,
+  $t/32$ ($t=0$ at the first step). Memory-free arms get the clock because, under a time limit,
+  an agent that can count steps has information a memory-free agent lacks
+  \citep{pardo2018timelimits}.
+  \item \textbf{LSTM-reset} (11,367) is the LSTM with its state $(h,c)$ set to zero before every
+  step, in training and evaluation: the same parameters and optimiser, no memory. Its 4,096
+  recurrent weights receive no signal, so it controls for recurrence, not for capacity.
+  \item \textbf{stack4 + clock} (11,381) sees the last four observations concatenated (zeros
+  before the fourth step) and the clock: a short, fixed memory without learned recurrence
+  \citep{hausknecht2015drqn}. Its body is $33\to55\to32$.
+  \item \textbf{MLP-wide, no clock} (11,401) is MLP-wide without the clock input
+  ($32\to130\to32$). It separates width from the clock. This arm was added after an interim look
+  at 46 of the 80 phase-1 runs and is analysed as exploratory.
+  \item \textbf{LSTM} and the small \textbf{MLP} are those of Part~I.
+  \item Two \textbf{mechanism arms}, added after the confirmatory result and exploratory, know
+  the time but have no memory: \textbf{LSTM-reset + clock} (11,495 parameters) feeds the clock to
+  the cell of LSTM-reset, and \textbf{MLP + clock} (2,951) feeds it to the small MLP's encoder.
+  They run on the same first 10 seeds with the protocol's learning rate, and their checkpoints
+  were played on the same sealed panel under a separate evaluation record.
+\end{itemize}
+
+\paragraph{Learning rates.}
+The new memory-free arms might need a different learning rate from the protocol's $10^{-3}$.
+Before phase~1, MLP-wide + clock and stack4 + clock were each trained with $10^{-3}$,
+$3\cdot10^{-4}$ and $3\cdot10^{-3}$ on three tuning seeds that are excluded from every
+evaluation \citep{eimer2023hyperparameters}. A rule fixed in the plan chose the rate with the
+highest mean validation AUC (ties to the protocol's rate) and wrote the choice to the chain's
+journal before phase~1 started: $10^{-3}$ for MLP-wide (AUC 0.62 versus 0.58 and 0.12) and
+$3\cdot10^{-4}$ for stack4 (0.42 versus 0.31 and 0.12). LSTM, LSTM-reset and the small MLP keep the
+protocol's rate; MLP-wide without clock uses MLP-wide's.
+
+\paragraph{Seeds.}
+Twenty new training seeds come from \texttt{SeedSequence(20261020)}, excluding the pilot seeds,
+the 30 seeds of Part~I and the tuning seeds. LSTM, MLP-wide + clock and LSTM-reset run on all 20;
+the small MLP, stack4 + clock and MLP-wide without clock run on the first 10, so every arm is
+paired with every other on the seeds they share. Within each seed, the order of the arms is a
+fixed permutation drawn from the master seed. Every run is re-evaluated three times as in
+\cref{sec:eval}. Phase~1 has 80 runs and the clock control 10.
+
+\paragraph{A sealed panel of new maps.}
+The confirmatory score is measured on 64 task-B maps that no run has seen and no study panel
+contains. They were built without loading any model, by walking map seeds from 3,150,000 and
+keeping maps whose physical identity differs from all 192 distinct maps of the study's panels.
+For each run we play its validation-selected checkpoint (\texttt{best\_B}, chosen over the 300,000
+interactions) on every sealed map with four new sampling seeds, 256 episodes per run. The panel
+was opened once, after the analysis below was committed; the opening is recorded with the hash
+of that analysis, and the tooling refuses to open it again with a different one.
+
+\paragraph{Hypotheses and tests.}
+The C01 design fixed, before any Part~II run, three principal contrasts and their thresholds:
+\textbf{P1} (capacity), LSTM minus MLP-wide + clock is at least 15\pp; \textbf{P2} (recurrence),
+LSTM minus LSTM-reset is at least 15\pp; and \textbf{P3}, a fully observable twin of the task,
+which we did not run but still count in the family. The secondary contrast \textbf{H3} asks
+whether a short fixed memory falls short of the two strong arms, that is, whether stack4 stays
+below their average: $\text{LSTM} + \text{MLP-wide} - 2\,\text{stack4} > 0$. The unit of analysis is the training seed; maps are not replicates. For
+each contrast we compute its value per seed on the seeds its arms share, an exact two-sided
+sign-flip permutation test over all $2^n$ sign patterns, a BCa bootstrap 95\% interval with
+10,000 resamples \citep{efron1993bootstrap} and the $t$ interval as a sensitivity check. Holm's
+correction \citep{holm1979simple} uses $m=3$ for the principal family and $m=5$ for the secondary
+one. A contrast is \emph{supported} when its Holm-adjusted $p<0.05$, its mean reaches the
+threshold and the lower end of its interval is above zero. Contrasts added after the interim
+look form an exploratory family that is reported without correction or verdict.
+
+\paragraph{A probe for time.}
+To see whether the LSTM's state carries the time step, we play each run's validation-selected
+checkpoint on the 32 validation maps with two new sampling seeds and record, at every step $t$,
+the LSTM's output after reading that step's observation. A ridge regression ($\lambda=1$,
+standardised features) predicts $t$ from it, with four cross-validation folds split by map so that
+no map appears in both training and testing. We report the out-of-fold $R^2$ and three
+references: the same network at its initial weights, the raw observation (what is readable
+without memory), and the trained state with shuffled labels \citep{hewitt2019control}.
+
+The same analysis was first run on the development test panel of Part~I (the end-of-training
+model, averaged over its four evaluations); those results were seen before the confirmatory
+analysis was frozen. The analysis code is \texttt{ucl study-contrasts}, checked on synthetic data
+with known answers.

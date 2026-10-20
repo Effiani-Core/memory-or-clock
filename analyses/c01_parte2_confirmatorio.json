@@ -1,0 +1,121 @@
+{
+  "analysis_id": "C01-PARTE2-CONFIRMATORIO",
+  "description": "Confirmatory C01 Part II analysis, frozen (committed) before the sealed panel is opened. Primary score, as in the C01 design (research document section 12.4): success of the validation-selected checkpoint (best_B, 300k budget) on a new sealed panel of 64 task-B maps that no study panel contains, 4 sampling replicas per map (256 episodes per run). Contrasts, thresholds, families and Holm sizes are identical to C01-PARTE2-DESARROLLO, whose development-panel results were seen before this freeze. P3 was not run and still counts in the principal family (m = 3). The exploratory family, including the clock control, was added after an interim look and gets no verdict.",
+  "plans": [
+    "plans/c01_parte2_fase1.json",
+    "plans/c01_parte2_sinreloj.json"
+  ],
+  "sealed": {
+    "evaluation_id": "C01-PARTE2-SELLADO",
+    "panel": "configs/sealed/c01_parte2_B.json",
+    "checkpoint": "best_B",
+    "replicas": 4
+  },
+  "scores": [
+    {
+      "name": "sealed_best",
+      "kind": "sealed",
+      "evaluation_id": "C01-PARTE2-SELLADO",
+      "role": "primary: best_B on the new sealed panel, 64 maps x 4 sampling replicas"
+    }
+  ],
+  "alpha": 0.05,
+  "bootstrap": 10000,
+  "seed": 0,
+  "families": [
+    {
+      "name": "principal",
+      "holm_m": 3,
+      "contrasts": [
+        {
+          "id": "P1",
+          "label": "capacity: LSTM minus parameter-matched MLP with clock",
+          "weights": {
+            "LSTM": 1,
+            "MLP-wide": -1
+          },
+          "min_effect": 0.15
+        },
+        {
+          "id": "P2",
+          "label": "recurrence: LSTM minus LSTM-reset",
+          "weights": {
+            "LSTM": 1,
+            "LSTM-reset": -1
+          },
+          "min_effect": 0.15
+        }
+      ]
+    },
+    {
+      "name": "secondary",
+      "holm_m": 5,
+      "contrasts": [
+        {
+          "id": "H3",
+          "label": "short memory: LSTM + MLP-wide - 2 stack4 > 0",
+          "weights": {
+            "LSTM": 1,
+            "MLP-wide": 1,
+            "stack4": -2
+          },
+          "min_effect": 0.0
+        }
+      ]
+    },
+    {
+      "name": "exploratory",
+      "exploratory": true,
+      "contrasts": [
+        {
+          "id": "E1",
+          "label": "clock: MLP-wide minus MLP-wide without clock",
+          "weights": {
+            "MLP-wide": 1,
+            "MLP-wide-noclock": -1
+          }
+        },
+        {
+          "id": "E2",
+          "label": "width without clock: MLP-wide-noclock minus small MLP",
+          "weights": {
+            "MLP-wide-noclock": 1,
+            "MLP": -1
+          }
+        },
+        {
+          "id": "E3",
+          "label": "pilot contrast: LSTM minus small MLP",
+          "weights": {
+            "LSTM": 1,
+            "MLP": -1
+          }
+        },
+        {
+          "id": "E4",
+          "label": "LSTM minus stack4",
+          "weights": {
+            "LSTM": 1,
+            "stack4": -1
+          }
+        },
+        {
+          "id": "E5",
+          "label": "stack4 minus MLP-wide",
+          "weights": {
+            "stack4": 1,
+            "MLP-wide": -1
+          }
+        },
+        {
+          "id": "E6",
+          "label": "LSTM-reset minus small MLP",
+          "weights": {
+            "LSTM-reset": 1,
+            "MLP": -1
+          }
+        }
+      ]
+    }
+  ]
+}

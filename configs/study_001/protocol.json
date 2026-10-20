@@ -1,0 +1,69 @@
+{
+  "study_id": "UCL-STUDY-001",
+  "plan": "docs/PLAN_STUDY_001.md revision 2",
+  "source_manifest": "configs/tasks.json",
+  "grid_size": 7,
+  "tasks": {
+    "A": "development-navigation",
+    "B": "development-pickup",
+    "C": "development-hold_transform"
+  },
+  "panel_seed_base": {
+    "A": 3000000,
+    "B": 3100000,
+    "C": 3200000
+  },
+  "panels": {
+    "train": 64,
+    "validation": 32,
+    "test": 64,
+    "final": 32,
+    "known": 16
+  },
+  "algorithm": {
+    "name": "a2c",
+    "lr": 0.001,
+    "rollout_steps": 16,
+    "gamma": 0.99,
+    "entropy_coef": 0.01
+  },
+  "evaluation_policy": "stochastic sampling; each episode uses a fixed sampling seed (the map seed unless stated)",
+  "single_map": {
+    "steps": 50000,
+    "eval_every": 5000,
+    "episodes": 16,
+    "threshold": 0.9
+  },
+  "pilot": {
+    "steps_per_task": 200000,
+    "eval_every": 10000,
+    "initializations": [
+      7,
+      19,
+      31
+    ]
+  },
+  "acquisition": {
+    "threshold": 0.75,
+    "consecutive": 2,
+    "min_gain": 0.2
+  },
+  "resources": {
+    "max_seconds": 7200,
+    "min_ram_mib": 400,
+    "max_temperature_c": 82,
+    "min_disk_gib": 2
+  },
+  "resource_check_every_updates": 25,
+  "tracking": {
+    "uri": "http://127.0.0.1:5000",
+    "experiment": "Universal Cognitive Lab"
+  },
+  "revisions": [
+    {
+      "date": "2026-10-16",
+      "change": "single_map 5000->50000 steps (eval 500->5000); pilot 20000->200000 steps per task (eval 2000->10000)",
+      "reason": "Single-map check failed at 5000 (LSTM 31%), then reached 100% at 20000 (LSTM) and 15000 (MLP) with 50000 steps: the circuit works and 5000 was too short. Measured ~450-700 training interactions/s, ~10x the planned estimate. Decided before any pilot result on validation/test panels."
+    }
+  ]
+}

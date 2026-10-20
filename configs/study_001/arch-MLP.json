@@ -1,0 +1,13 @@
+{
+  "architecture_id": "S001-MLP",
+  "name": "mlp_no_memory",
+  "note": "Control without memory: same encoder as LSTM, no recurrent node. Smaller than LSTM; reported with its real size.",
+  "architecture": {
+    "kind": "graph",
+    "nodes": [
+      {"id": "encoder", "type": "mlp", "inputs": ["observation"], "params": {"output_dim": 32}}
+    ],
+    "output": "encoder",
+    "max_parameters": 250000
+  }
+}

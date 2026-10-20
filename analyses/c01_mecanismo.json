@@ -1,0 +1,70 @@
+{
+  "analysis_id": "C01-MECANISMO",
+  "description": "C01 mechanism controls on the C01 sealed panel, EXPLORATORY (added after the confirmatory result). All contrasts exploratory; no correction or verdict.",
+  "plans": [
+    "plans/c01_parte2_fase1.json",
+    "plans/c01_parte2_sinreloj.json",
+    "plans/c01_mecanismo.json"
+  ],
+  "scores": [
+    {
+      "name": "sealed_best",
+      "kind": "sealed",
+      "evaluation_ids": [
+        "C01-PARTE2-SELLADO",
+        "C01-MECANISMO-SELLADO"
+      ]
+    }
+  ],
+  "alpha": 0.05,
+  "bootstrap": 10000,
+  "seed": 0,
+  "families": [
+    {
+      "name": "exploratory",
+      "exploratory": true,
+      "contrasts": [
+        {
+          "id": "M1",
+          "label": "clock for LSTM-reset",
+          "weights": {
+            "LSTM-reset-clock": 1,
+            "LSTM-reset": -1
+          }
+        },
+        {
+          "id": "M2",
+          "label": "memory beyond the clock, same cell: LSTM minus LSTM-reset-clock",
+          "weights": {
+            "LSTM": 1,
+            "LSTM-reset-clock": -1
+          }
+        },
+        {
+          "id": "M3",
+          "label": "clock for the small MLP",
+          "weights": {
+            "MLP-clock": 1,
+            "MLP": -1
+          }
+        },
+        {
+          "id": "M4",
+          "label": "width given the clock: MLP-wide minus MLP-clock",
+          "weights": {
+            "MLP-wide": 1,
+            "MLP-clock": -1
+          }
+        },
+        {
+          "id": "M5",
+          "label": "LSTM minus MLP-clock",
+          "weights": {
+            "LSTM": 1,
+            "MLP-clock": -1
+          }
+        }
+      ]
+    }
+  ]
+}
